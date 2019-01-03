@@ -34,9 +34,10 @@ Vagrant.configure("2") do |config|
   SHELL
 end
 ```
+Then run the following commands: 
 
-`vagrant up`
-`vagrant ssh`
-
-
+```
+vagrant up
+vagrant ssh
+```
 
