@@ -1,0 +1,10 @@
+output-vmware-iso
+packer_cache
+*.ovf
+*.mf
+*.vmdk
+*.vmx
+*.vmsd
+*.vmxf
+*.nvram
+*.box

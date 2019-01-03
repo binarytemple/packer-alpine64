@@ -1,0 +1,81 @@
+{
+  "variables": {
+    "iso_file": "http://dl-cdn.alpinelinux.org/alpine/v3.8/releases/x86_64/alpine-virt-3.8.2-x86_64.iso",
+    "iso_checksum_value": "77a609dd710ba0d3b0806a314f5c4ef1718ce140b522bf7c7ca081eba664db2c",
+    "iso_checksum_type": "sha256",
+    "product_name": "alpine",
+    "product_version": "3.8.2",
+    "product_arch": "amd64",
+    "headless": "true",
+    "disk_size": "30720",
+    "ssh_password": "alpine",
+    "ssh_wait_timeout": "5m",
+    "shutdown_command": "poweroff",
+    "cloud_token": "{{ env `ALPINE_VAGRANT_CLOUD_TOKEN` }}",
+    "cloud_image_name": "{{ env `ALPINE_VAGRANT_IMAGE_NAME` }}",
+    "version": "3.8.2-{{timestamp}}"
+  },
+  "builders": [
+    {
+      "vm_name": "{{user `product_name`}}-{{user `product_version`}}-{{user `product_arch`}}",
+      "vmdk_name": "{{user `product_name`}}-{{user `product_version`}}-{{user `product_arch`}}",
+      "type": "vmware-iso",
+      "headless": "{{user `headless`}}",
+      "disk_size": "{{user `disk_size`}}",
+      "disk_type_id": 0,
+      "guest_os_type": "other3xlinux-64",
+      "iso_url": "{{user `iso_file`}}",
+      "iso_checksum": "{{user `iso_checksum_value`}}",
+      "iso_checksum_type": "sha256",
+      "ssh_username": "root",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_wait_timeout": "{{user `ssh_wait_timeout`}}",
+      "shutdown_command": "{{user `shutdown_command`}}",
+      "http_directory": "http",
+      "vmx_data": {
+        "cpuid.coresPerSocket": "1",
+        "virtualhw.version": "8",
+        "ethernet0.present": "TRUE",
+        "ethernet0.startConnected": "TRUE",
+        "ethernet1.present": "TRUE",
+        "ethernet1.startConnected": "TRUE"
+      },
+      "boot_command": [
+        "<wait10>root<enter><wait>",
+        "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+        "setup-alpine -f answers<enter><wait10>",
+        "alpine<enter><wait>",
+        "alpine<enter><wait10>",
+        "none<enter>",
+        "<wait10><wait10><wait10>",
+        "y<enter>",
+        "mount /dev/sda3 /mnt<enter>",
+        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
+        "/etc/init.d/sshd stop<enter><wait>",
+        "reboot<enter>"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "/bin/sh -x '{{.Path}}'",
+      "script": "scripts/provision"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "vagrant",
+        "vagrantfile_template": "configs/vagrantfile.tpl"
+      },
+      {
+        "type": "vagrant-cloud",
+        "box_tag": "{{user `cloud_image_name`}}",
+        "access_token": "{{user `cloud_token`}}",
+        "version": "{{user `version`}}"
+      }
+    ]
+  ]
+}

@@ -1,0 +1,38 @@
+#!/bin/sh -x
+
+apk --update add open-vm-tools sudo
+rm -rf /var/cache/apk/*
+rc-update -u add open-vm-tools default
+service open-vm-tools start
+vmware-toolbox-cmd timesync enable
+
+rm -rf /etc/ssh/ssh_host_*
+cat <<EOF >> /etc/ssh/sshd_config
+UseDNS no
+EOF
+
+adduser -D vagrant
+
+# setting up insecure vagrant keypair
+# https://github.com/hashicorp/vagrant/tree/master/keys
+#echo vagrant:vagrant | chpasswd
+
+VAGRANT_HOME="/home/vagrant"
+VAGRANT_SSH_DIR="$VAGRANT_HOME/.ssh"
+VAGRANT_AUTHORIZED_KEYS="$VAGRANT_SSH_DIR/authorized_keys"
+
+mkdir $VAGRANT_SSH_DIR
+
+cat <<EOF >> $VAGRANT_AUTHORIZED_KEYS
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+EOF
+
+chmod 700 $VAGRANT_HOME
+chown -R vagrant $VAGRANT_HOME
+chmod 600 $VAGRANT_AUTHORIZED_KEYS
+
+echo "allow the (passwordless) vagrant user to log in using ssh"
+sed -i -e 's/vagrant:!/vagrant:*/' /etc/shadow
+
+echo "allow vagrant user passwordless sudo rights"
+echo "vagrant ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
