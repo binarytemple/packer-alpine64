@@ -2,7 +2,9 @@
 
 apk --update add open-vm-tools sudo
 rm -rf /var/cache/apk/*
-rc-update -u add open-vm-tools default
+rc-update add open-vm-tools 
+rc-update -u 
+
 service open-vm-tools start
 vmware-toolbox-cmd timesync enable
 
