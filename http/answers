@@ -34,7 +34,7 @@ SSHDOPTS="-c openssh"
 # Use openntpd
 NTPOPTS="-c openntpd"
 
-# Use /dev/sda as a data disk
+# Disable swap / Use /dev/sda as a data disk
 DISKOPTS="-m sys /dev/sda"
 
 # Setup in /media/sdb1
