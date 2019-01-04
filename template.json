@@ -18,6 +18,36 @@
   "builders": [
     {
       "vm_name": "{{user `product_name`}}-{{user `product_version`}}-{{user `product_arch`}}",
+      "type": "virtualbox-iso",
+      "headless": "{{user `headless`}}",
+      "disk_size": "{{user `disk_size`}}",
+      "guest_os_type": "Linux26_64",
+      "iso_url": "{{user `iso_file`}}",
+      "iso_checksum": "{{user `iso_checksum_value`}}",
+      "iso_checksum_type": "sha256",
+      "ssh_username": "root",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_wait_timeout": "{{user `ssh_wait_timeout`}}",
+      "shutdown_command": "{{user `shutdown_command`}}",
+      "http_directory": "http",
+      "boot_command": [
+        "<wait10>root<enter><wait>",
+        "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+        "setup-alpine -f answers<enter><wait10>",
+        "alpine<enter><wait>",
+        "alpine<enter><wait10>",
+        "none<enter>",
+        "<wait10><wait10><wait10>",
+        "y<enter>",
+        "mount /dev/sda3 /mnt<enter>",
+        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
+        "/etc/init.d/sshd stop<enter><wait>",
+        "reboot<enter>"
+      ]
+    },
+    {
+      "vm_name": "{{user `product_name`}}-{{user `product_version`}}-{{user `product_arch`}}",
       "vmdk_name": "{{user `product_name`}}-{{user `product_version`}}-{{user `product_arch`}}",
       "type": "vmware-iso",
       "headless": "{{user `headless`}}",
